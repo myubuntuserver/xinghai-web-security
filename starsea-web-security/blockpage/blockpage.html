@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星海安全 - 已拦截威胁</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 640px;
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .shield {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 24px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      50% { box-shadow: 0 0 0 20px rgba(220,38,38,0); }
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; color: #f87171; }
+    .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 32px; }
+    .threat-box {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: left;
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+    .threat-row {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 13px;
+    }
+    .threat-row:last-child { border-bottom: none; }
+    .threat-label {
+      color: #64748b;
+      width: 100px;
+      flex-shrink: 0;
+    }
+    .threat-value {
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .threat-value.danger { color: #f87171; font-weight: 600; }
+    .threat-value.url { font-family: monospace; font-size: 12px; color: #94a3b8; }
+    .severity-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .sev-critical { background: #991b1b; color: #fca5a5; }
+    .sev-high { background: #9a3412; color: #fdba74; }
+    .sev-medium { background: #854d0e; color: #fde047; }
+    .sev-low { background: #1e3a5f; color: #93c5fd; }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: #1d4ed8;
+      color: white;
+    }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .btn-secondary:hover { background: #475569; }
+    .btn-danger {
+      background: transparent;
+      color: #f87171;
+      border: 1px solid #991b1b;
+    }
+    .btn-danger:hover { background: #991b1b20; }
+    .btn-allow {
+      background: #065f46;
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+    }
+    .btn-allow:hover { background: #047857; }
+    .warning-text {
+      font-size: 12px;
+      color: #fbbf24;
+      margin-top: 16px;
+      padding: 10px;
+      background: #42200680;
+      border-radius: 6px;
+    }
+    .footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="shield">🛡️</div>
+    <h1>威胁已拦截</h1>
+    <p class="subtitle">星海 Web 安全 阻止了一次对已知恶意资源的访问</p>
+
+    <div class="threat-box">
+      <div class="threat-row">
+        <span class="threat-label">威胁类型</span>
+        <span class="threat-value danger" id="threatFamily">未知威胁</span>
+      </div>
+      <div class="threat-row">
+        <span class="threat-label">危险等级</span>
+        <span class="threat-value"><span class="severity-badge" id="severity">HIGH</span></span>
+      </div>
+      <div class="threat-row">
+        <span class="threat-label">拦截地址</span>
+        <span class="threat-value url" id="blockedUrl">-</span>
+      </div>
+      <div class="threat-row">
+        <span class="threat-label">匹配规则</span>
+        <span class="threat-value" id="matchedRule">-</span>
+      </div>
+      <div class="threat-row">
+        <span class="threat-label">威胁描述</span>
+        <span class="threat-value" id="context">-</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="goBack()">← 返回安全页面</button>
+      <button class="btn btn-secondary" id="proceedBtn" onclick="proceed()">仍要访问（不推荐）</button>
+      <button class="btn btn-allow" id="allowBtn" onclick="addToAllowlist()" style="display:none;">✓ 加入白名单</button>
+    </div>
+
+    <div class="warning-text" id="warnText" style="display:none;">
+      ⚠️ 您即将访问一个已被威胁情报标记的恶意站点。继续访问可能导致系统感染木马、数据泄露或被勒索。
+    </div>
+
+    <div class="allow-result" id="allowResult" style="display:none; margin-top:16px; padding:12px; background:#064e3b; border-radius:8px; color:#6ee7b7; font-size:13px;">
+      ✓ 已将 <strong id="allowDomain"></strong> 加入白名单，以后不再拦截。可在设置页管理白名单。
+    </div>
+
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get('url') || '';
+    const severity = params.get('severity') || 'high';
+    const family = params.get('family') || '未知威胁';
+    const context = params.get('context') || '';
+    const matched = params.get('matched') || '';
+    const matchType = params.get('type') || 'domain';
+
+    document.getElementById('blockedUrl').textContent = url;
+    document.getElementById('threatFamily').textContent = decodeURIComponent(family);
+    document.getElementById('context').textContent = decodeURIComponent(context) || '无详细信息';
+    document.getElementById('matchedRule').textContent = `${decodeURIComponent(matched)} (${matchType})`;
+
+    const sevEl = document.getElementById('severity');
+    sevEl.textContent = severity.toUpperCase();
+    sevEl.className = 'severity-badge sev-' + severity;
+
+    // v1.2.0: 仅非 critical 威胁显示"加入白名单"按钮
+    if (severity !== 'critical') {
+      document.getElementById('allowBtn').style.display = 'inline-block';
+    }
+
+    function goBack() {
+      if (history.length > 1) history.back();
+      else chrome.tabs.getCurrent(tab => chrome.tabs.remove(tab.id));
+    }
+
+    let proceedClicks = 0;
+    function proceed() {
+      proceedClicks++;
+      if (proceedClicks === 1) {
+        document.getElementById('warnText').style.display = 'block';
+        document.getElementById('proceedBtn').textContent = '我已了解风险，继续访问';
+        return;
+      }
+      const targetUrl = decodeURIComponent(url);
+      if (targetUrl) window.location.replace(targetUrl);
+    }
+
+    function addToAllowlist() {
+      let domain;
+      try {
+        domain = new URL(decodeURIComponent(url)).hostname.replace(/^www\./, '');
+      } catch {
+        domain = decodeURIComponent(matched);
+      }
+      if (!domain) return;
+
+      chrome.runtime.sendMessage({
+        action: 'addToAllowlist',
+        entry: {
+          type: 'domain',
+          value: domain,
+          note: '拦截页手动放行',
+          includeSubdomains: true
+        }
+      }, (resp) => {
+        if (resp && resp.ok) {
+          document.getElementById('allowDomain').textContent = domain;
+          document.getElementById('allowResult').style.display = 'block';
+          document.getElementById('allowBtn').disabled = true;
+          document.getElementById('allowBtn').textContent = '✓ 已加入';
+          // 2秒后自动跳转
+          setTimeout(() => {
+            window.location.replace(decodeURIComponent(url));
+          }, 1500);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
