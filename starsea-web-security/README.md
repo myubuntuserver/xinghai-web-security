@@ -4,15 +4,14 @@
 
 ## 核心功能
 
-- **实时威胁拦截**：基于 4000+ 恶意域名、IP、URL 的本地规则库，毫秒级 O(1) 匹配
+- **实时威胁拦截**：基于 4000+ 恶意域名、IP、URL 的本地规则库，毫秒级匹配
 - **钓鱼网站识别**：内置假冒软件下载站（图吧工具箱、Fan Control、哔哩哔哩等）特征
 - **C2 通信阻断**：拦截已知银狐/ValleyRAT 等僵尸网络 C2 服务器连接
 - **恶意下载拦截**：阻止来自已知恶意源的文件下载
-- **ML 启发式检测 v5.3**：DGA 域名、Punycode 同形异义字攻击、Typosquatting 编辑距离、云盘滥用、n-gram 分布异常、可疑 TLD 检测
-- **白名单系统**：内置可信域 + 用户自定义 + 通配符 + 临时会话放行，优先于所有检测
-- **自定义规则**：用户可手动添加域名/IP/URL 黑名单
-- **拦截统计**：记录所有拦截事件，按威胁家族和严重程度分类
-- **云端威胁情报**：可选配 Security.X 云端 Worker API，支持 VirusTotal 关联查询
+- **启发式检测**：DGA 域名、Punycode 同形异义字攻击、可疑 TLD 检测
+- **自定义规则**：用户可手动添加要拦截的域名/IP/URL
+- **拦截统计**：记录所有拦截事件，按威胁家族分类
+- **威胁情报同步**：支持远程规则 URL，自动更新 IOC 库
 
 ## 安装方法
 
@@ -31,10 +30,7 @@ starsea-web-security/
 ├── manifest.json          # MV3 扩展配置
 ├── background.js          # 后台 Service Worker（核心拦截逻辑）
 ├── lib/
-│   ├── matcher.js         # IOC 高性能匹配引擎（Map-based O(1) 查找）
-│   ├── ml-engine.js       # ML 推理引擎 v5.3（特征提取 + 加权累积 + 多因子门控）
-│   ├── allowlist.js       # 白名单管理器（内置+用户+通配符+会话）
-│   └── cloud-client.js    # 云端查杀客户端（Worker API 通信）
+│   └── matcher.js         # IOC 高性能匹配引擎
 ├── popup/
 │   ├── popup.html         # 弹出面板 UI
 │   └── popup.js           # 弹出面板逻辑
@@ -42,7 +38,7 @@ starsea-web-security/
 │   ├── options.html       # 设置页
 │   └── options.js         # 设置页逻辑
 ├── blockpage/
-│   └── blockpage.html     # 威胁拦截页（含二次确认 + 加入白名单）
+│   └── blockpage.html     # 威胁拦截页（含二次确认）
 ├── rules/
 │   └── blocklist.json     # 内置 IOC 规则库（4138条）
 └── icons/
@@ -51,28 +47,6 @@ starsea-web-security/
     ├── icon48.png
     └── icon128.png
 ```
-
-## 检测流程
-
-```
-URL 请求
-  → 白名单检查（内置可信域 → 用户自定义 → 通配符 → 临时会话）
-  → 精确域名匹配（O(1) Map 查找）
-  → 子域名遍历（父域匹配）
-  → IP 地址匹配
-  → URL 前缀/包含匹配
-  → ML 引擎推理（特征提取 → 加权累积打分 → 多因子门控判定）
-  → 云端查杀（可选，Security.X Worker API）
-  → 拦截/放行
-```
-
-### ML 引擎判定逻辑
-
-| 信号类型 | 示例 | 判定方式 |
-|---------|------|---------|
-| 强信号 | C2 端口、Punycode 攻击、zinst/nsis 命名 | 单信号即可判定 |
-| 组合信号 | 品牌仿冒+可疑TLD、钓鱼路径+非HTTPS | 需 2+ 因子叠加 |
-| 弱信号 | 可疑关键词、异常端口、长URL | 需 ≥3 个累积 |
 
 ## 威胁情报来源
 
@@ -92,12 +66,6 @@ URL 请求
 
 ## 版本历史
 
-### v1.2.0 (2026-08-20)
-- 新增白名单系统（内置可信域 + 用户自定义 + 临时放行）
-- ML 引擎升级至 v5.3（多因子门控，误报/漏报压制）
-- 拦截页支持"加入白名单"按钮
-- 白名单优先于所有检测
-
 ### v1.0.0 (2026-08-19)
 - 初始版本
 - 4138 条 IOC 规则（4084 域名 + 29 IP + 15 URL + 10 文件哈希）
@@ -108,7 +76,7 @@ URL 请求
 
 ## 技术栈
 
-- Manifest V3 (Service Worker + ES Module)
+- Manifest V3 (Service Worker)
 - chrome.declarativeNetRequest
 - chrome.downloads API
 - 纯原生 JavaScript，无第三方依赖

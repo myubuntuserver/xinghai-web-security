@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>星海 Web 安全 - 设置</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subtitle { color: #64748b; margin-bottom: 24px; font-size: 14px; }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 16px; color: #93c5fd; }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info h3 { font-size: 14px; font-weight: 500; }
+    .setting-info p { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #334155;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #22c55e; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    input[type="text"], input[type="number"] {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e2e8f0;
+      font-size: 13px;
+      width: 100%;
+    }
+    input[type="text"]:focus { outline: none; border-color: #3b82f6; }
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary { background: #1d4ed8; border-color: #2563eb; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-danger { background: #991b1b; border-color: #dc2626; }
+    .btn-danger:hover { background: #dc2626; }
+    .custom-rule {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .custom-rule select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px;
+      color: #e2e8f0;
+    }
+    .rule-list { margin-top: 12px; }
+    .rule-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #0f172a;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .rule-item .del { color: #f87171; cursor: pointer; }
+    .rule-item .del:hover { color: #ef4444; }
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-box {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-box .num { font-size: 24px; font-weight: 700; color: #60a5fa; }
+    .stat-box .num.red { color: #f87171; }
+    .stat-box .lbl { font-size: 11px; color: #64748b; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌊 星海 Web 安全</h1>
+    <p class="subtitle">v1.2.0</p>
+
+    <div class="card">
+      <h2>📊 防护概览</h2>
+      <div class="stats-summary" id="statsBox">
+        <div class="stat-box"><div class="num red" id="sBlocks">0</div><div class="lbl">已拦截</div></div>
+        <div class="stat-box"><div class="num" id="sDomains">0</div><div class="lbl">域名规则</div></div>
+        <div class="stat-box"><div class="num" id="sIPs">0</div><div class="lbl">IP规则</div></div>
+        <div class="stat-box"><div class="num" id="sVersion">-</div><div class="lbl">规则版本</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🛡️ 防护模块</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>总开关</h3>
+          <p>启用/停用所有防护功能</p>
+        </div>
+        <div class="toggle" id="tEnabled"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>钓鱼网站拦截</h3>
+          <p>拦截假冒软件下载站、钓鱼登录页</p>
+        </div>
+        <div class="toggle on" id="tPhishing"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>恶意软件站点拦截</h3>
+          <p>拦截已知木马/勒索软件分发站点</p>
+        </div>
+        <div class="toggle on" id="tMalware"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>C2 通信拦截</h3>
+          <p>拦截与已知僵尸网络 C2 服务器的连接</p>
+        </div>
+        <div class="toggle on" id="tC2"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>恶意下载拦截</h3>
+          <p>阻止来自恶意源的文件下载</p>
+        </div>
+        <div class="toggle on" id="tDownloads"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>启发式检测</h3>
+          <p>DGA域名、Punycode钓鱼、可疑TLD检测（可能有误报）</p>
+        </div>
+        <div class="toggle on" id="tHeuristic"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>桌面通知</h3>
+          <p>拦截威胁时显示系统通知</p>
+        </div>
+        <div class="toggle on" id="tNotifications"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔄 规则更新</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>远程规则 URL（可选）</h3>
+          <p>填入远程 JSON 规则地址以自动更新，留空则仅使用内置规则</p>
+        </div>
+      </div>
+      <input type="text" id="remoteUrl" placeholder="https://example.com/starsea-blocklist.json">
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn btn-primary" id="saveUrl">保存并更新</button>
+        <button class="btn" id="reloadRules">重新加载内置规则</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>☁️ 云端查杀</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>启用云查</h3>
+          <p>本地规则未命中时，向云端发送 URL/域名进行 D1+ML+VT 联合判定</p>
+        </div>
+        <div class="toggle" id="tCloud"></div>
+      </div>
+      <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="setting-info" style="width:100%;">
+          <h3>云端 API 地址</h3>
+        </div>
+        <input type="text" id="cloudEndpoint" placeholder="https://starsea-security.example.workers.dev">
+      </div>
+      <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="setting-info" style="width:100%;">
+          <h3>API Key</h3>
+        </div>
+        <input type="password" id="cloudApiKey" placeholder="输入 API Key">
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>VirusTotal 联动</h3>
+          <p>云查时附带 VT 检测结果（延迟增加约 2-4 秒）</p>
+        </div>
+        <div class="toggle" id="tCloudVT"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn btn-primary" id="saveCloud">保存云查配置</button>
+        <button class="btn" id="testCloud">测试连接</button>
+      </div>
+      <div id="cloudStatus" style="margin-top:8px; font-size:12px; color:#64748b;"></div>
+    </div>
+
+    <div class="card">
+      <h2>✏️ 自定义黑名单</h2>
+      <p style="font-size:12px; color:#64748b; margin-bottom:12px;">手动添加要拦截的域名、IP 或 URL</p>
+      <div class="custom-rule">
+        <select id="ruleType">
+          <option value="domain">域名</option>
+          <option value="ip">IP地址</option>
+          <option value="url">完整URL</option>
+        </select>
+        <input type="text" id="ruleValue" placeholder="example.com">
+        <input type="text" id="ruleNote" placeholder="备注（可选）" style="max-width:140px;">
+        <button class="btn btn-primary" id="addRule">添加</button>
+      </div>
+      <div class="rule-list" id="ruleList"></div>
+    </div>
+
+    <div class="card">
+      <h2>✅ 白名单管理</h2>
+      <p style="font-size:12px; color:#64748b; margin-bottom:12px;">
+        白名单中的域名/IP/URL 将被直接放行，不触发任何检测。支持通配符（如 *.example.com）。
+        内置可信域名 <strong id="builtinCount">--</strong> 个（官网/CDN/安全厂商），不可删除。
+      </p>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>启用白名单</h3>
+          <p>关闭后所有检测将忽略白名单（不推荐）</p>
+        </div>
+        <div class="toggle on" id="tAllowlist"></div>
+      </div>
+      <div class="custom-rule" style="margin-top:12px;">
+        <select id="allowType">
+          <option value="domain">域名</option>
+          <option value="ip">IP地址</option>
+          <option value="url">完整URL</option>
+        </select>
+        <input type="text" id="allowValue" placeholder="example.com 或 *.example.com">
+        <input type="text" id="allowNote" placeholder="备注（可选）" style="max-width:140px;">
+        <button class="btn btn-primary" id="addAllow" style="background:#065f46;border-color:#10b981;">添加</button>
+      </div>
+      <div class="rule-list" id="allowList"></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 拦截记录</h2>
+      <div id="blockList" style="max-height:300px; overflow-y:auto;"></div>
+      <button class="btn btn-danger" id="clearStats" style="margin-top:12px;">清空记录</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
