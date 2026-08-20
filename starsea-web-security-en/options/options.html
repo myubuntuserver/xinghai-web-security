@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StarSea Web Security - Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subtitle { color: #64748b; margin-bottom: 24px; font-size: 14px; }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 16px; color: #93c5fd; }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info h3 { font-size: 14px; font-weight: 500; }
+    .setting-info p { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #334155;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #22c55e; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    input[type="text"], input[type="number"] {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e2e8f0;
+      font-size: 13px;
+      width: 100%;
+    }
+    input[type="text"]:focus { outline: none; border-color: #3b82f6; }
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary { background: #1d4ed8; border-color: #2563eb; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-danger { background: #991b1b; border-color: #dc2626; }
+    .btn-danger:hover { background: #dc2626; }
+    .custom-rule {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .custom-rule select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px;
+      color: #e2e8f0;
+    }
+    .rule-list { margin-top: 12px; }
+    .rule-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #0f172a;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .rule-item .del { color: #f87171; cursor: pointer; }
+    .rule-item .del:hover { color: #ef4444; }
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-box {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-box .num { font-size: 24px; font-weight: 700; color: #60a5fa; }
+    .stat-box .num.red { color: #f87171; }
+    .stat-box .lbl { font-size: 11px; color: #64748b; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌊 StarSea Web Security</h1>
+    <p class="subtitle">v1.2.0</p>
+
+    <div class="card">
+      <h2>📊 Dashboard</h2>
+      <div class="stats-summary" id="statsBox">
+        <div class="stat-box"><div class="num red" id="sBlocks">0</div><div class="lbl">Blocked</div></div>
+        <div class="stat-box"><div class="num" id="sDomains">0</div><div class="lbl">Domain Rules</div></div>
+        <div class="stat-box"><div class="num" id="sIPs">0</div><div class="lbl">IP Rules</div></div>
+        <div class="stat-box"><div class="num" id="sVersion">-</div><div class="lbl">Rule Version</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🛡️ Protection Modules</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Master Switch</h3>
+          <p>Enable or disable all protection features</p>
+        </div>
+        <div class="toggle" id="tEnabled"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Phishing Blocking</h3>
+          <p>Block fake software download sites and phishing login pages</p>
+        </div>
+        <div class="toggle on" id="tPhishing"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Malware Site Blocking</h3>
+          <p>Block known trojan/ransomware distribution sites</p>
+        </div>
+        <div class="toggle on" id="tMalware"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>C2 Communication Blocking</h3>
+          <p>Block connections to known botnet C2 servers</p>
+        </div>
+        <div class="toggle on" id="tC2"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Malicious Download Blocking</h3>
+          <p>Prevent file downloads from malicious sources</p>
+        </div>
+        <div class="toggle on" id="tDownloads"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Heuristic Detection</h3>
+          <p>DGA domains, Punycode phishing, suspicious TLD detection (may have false positives)</p>
+        </div>
+        <div class="toggle on" id="tHeuristic"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Desktop Notifications</h3>
+          <p>Show system notification when a threat is blocked</p>
+        </div>
+        <div class="toggle on" id="tNotifications"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔄 Rule Updates</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Remote Rule URL (Optional)</h3>
+          <p>Enter a remote JSON rule URL for automatic updates. Leave empty to use built-in rules only.</p>
+        </div>
+      </div>
+      <input type="text" id="remoteUrl" placeholder="https://example.com/starsea-blocklist.json">
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn btn-primary" id="saveUrl">Save & Update</button>
+        <button class="btn" id="reloadRules">Reload Built-in Rules</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>☁️ Cloud Lookup</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Enable Cloud Lookup</h3>
+          <p>When local rules miss, send URL/domain to cloud for D1+ML+VT joint verdict</p>
+        </div>
+        <div class="toggle" id="tCloud"></div>
+      </div>
+      <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="setting-info" style="width:100%;">
+          <h3>Cloud API Endpoint</h3>
+        </div>
+        <input type="text" id="cloudEndpoint" placeholder="https://starsea-security.example.workers.dev">
+      </div>
+      <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <div class="setting-info" style="width:100%;">
+          <h3>API Key</h3>
+        </div>
+        <input type="password" id="cloudApiKey" placeholder="Enter API Key">
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>VirusTotal Integration</h3>
+          <p>Include VT results in cloud lookup (adds ~2-4s latency)</p>
+        </div>
+        <div class="toggle" id="tCloudVT"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn btn-primary" id="saveCloud">Save Cloud Config</button>
+        <button class="btn" id="testCloud">Test Connection</button>
+      </div>
+      <div id="cloudStatus" style="margin-top:8px; font-size:12px; color:#64748b;"></div>
+    </div>
+
+    <div class="card">
+      <h2>✏️ Custom Blacklist</h2>
+      <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Manually add domains, IPs, or URLs to block</p>
+      <div class="custom-rule">
+        <select id="ruleType">
+          <option value="domain">Domain</option>
+          <option value="ip">IP Address</option>
+          <option value="url">Full URL</option>
+        </select>
+        <input type="text" id="ruleValue" placeholder="example.com">
+        <input type="text" id="ruleNote" placeholder="Note (optional)" style="max-width:140px;">
+        <button class="btn btn-primary" id="addRule">Add</button>
+      </div>
+      <div class="rule-list" id="ruleList"></div>
+    </div>
+
+    <div class="card">
+      <h2>✅ Allowlist</h2>
+      <p style="font-size:12px; color:#64748b; margin-bottom:12px;">
+        Domains/IPs/URLs in the allowlist will bypass all detection. Supports wildcards (e.g. *.example.com).
+        <strong id="builtinCount">--</strong> built-in trusted domains (official sites/CDN/security vendors), cannot be removed.
+      </p>
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>Enable Allowlist</h3>
+          <p>When disabled, all detection ignores the allowlist (not recommended)</p>
+        </div>
+        <div class="toggle on" id="tAllowlist"></div>
+      </div>
+      <div class="custom-rule" style="margin-top:12px;">
+        <select id="allowType">
+          <option value="domain">Domain</option>
+          <option value="ip">IP Address</option>
+          <option value="url">Full URL</option>
+        </select>
+        <input type="text" id="allowValue" placeholder="example.com or *.example.com">
+        <input type="text" id="allowNote" placeholder="Note (optional)" style="max-width:140px;">
+        <button class="btn btn-primary" id="addAllow" style="background:#065f46;border-color:#10b981;">Add</button>
+      </div>
+      <div class="rule-list" id="allowList"></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Block Log</h2>
+      <div id="blockList" style="max-height:300px; overflow-y:auto;"></div>
+      <button class="btn btn-danger" id="clearStats" style="margin-top:12px;">Clear Log</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
